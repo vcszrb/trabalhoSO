@@ -3,7 +3,7 @@
 
 **Nome:** Vinicius Souza Rabaquim 
 **Turno:** Noite 
-**Data do último commit:** (preencher ao final)
+**Data do último commit:** 28/11/2025
 
 ---
 
@@ -54,14 +54,14 @@ tmpfs           2.3G     0  2.3G   0% /dev/shm
 tmpfs           5.0M  8.0K  5.0M   1% /run/lock
 /dev/sdb1       7.9G   24K  7.5G   1% /backup
 tmpfs           460M  236K  459M   1% /run/user/1000
-
+``` 
 ## Prática 02 – Montagem de Mídia (p. 172)
 ###Resumo da Prática
-Criei o diretório cdrom na pasta do usuário, montei a mídia /dev/sr0 no diretório e validei seu conteúdo lendo um arquivo presente na ISO montada.
-Criei o diretório cdrom na pasta do usuário,montei a mídia /dev/sr0 no diretório
- e validei seu conteúdo lendo um arquivo presente na ISO montada.
+Criei o diretório ~/cdrom e montei a mídia presente em /dev/sr0 nesse diretório usando o comando mount.
+Após a montagem, validei a operação verificando o conteúdo da mídia e lendo um arquivo interno da ISO para confirmar o acesso.
 
 * **Evidência de Validação:**
+```bash
 #df -h
 Filesystem      Size  Used Avail Use% Mounted on
 udev            2.3G     0  2.3G   0% /dev
@@ -75,7 +75,7 @@ tmpfs           460M  236K  459M   1% /run/user/1000
 
 # cat ~/cdrom/README.mirrors.txt
 The list of Debian mirror sites is available here: https://www.debian.org/mirror/list
-
+```
 ### CAPÍTULO 7 – PRÁTICAS (p. 233)
 ### Prática prc0001 01 – Registro de Sessão e Processos (p. 233)
 #### Resumo da Prática
@@ -86,6 +86,7 @@ Filtrei processos relacionados ao Python usando grep.
 Finalizei a sessão e visualizei o arquivo gerado contendo o registro.
 
 * **Evidência de Validação:**
+```bash
 # cat /home/usuario/typescript
 Script started on 2025-11-26 22:02:56-03:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="87" LINES="24"]
 userlinux@debian:~$ ps aux | grep python
@@ -96,7 +97,7 @@ exit
 
 Script done on 2025-11-26 22:03:07-03:00 [COMMAND_EXIT_CODE="0"]
 
-
+```
 ### CAPÍTULO 9 – PRÁTICAS (p. 286–288)
 ### Prática checkpoint03 – Configurar Endereço IP Estático (p. 286)
 #### Resumo da Prática
@@ -104,6 +105,7 @@ Editei o arquivo /etc/network/interfaces para configurar um endereço IP estáti
 Reiniciei o sistema e validei a configuração usando os comandos ip address e ip route.
 
 * **Evidência de Validação:**
+```bash
 # ip address show enp0s3
 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
     link/ether 08:00:27:ea:a1:08 brd ff:ff:ff:ff:ff:ff
@@ -134,7 +136,7 @@ address 192.168.0.50
 netmask 255.255.255.0
 gateway 192.168.0.1
 dns-nameservers 8.8.8.8 1.1.1.1
-
+```
 
 ## Prática checkpoint04 – DHCP e Configuração Manual (p. 287)
 ###Resumo da Prática
@@ -145,16 +147,17 @@ Após isso, configurei manualmente um endereço IP com o comando ip address add 
 # Saída do comando 'ip address show enp0s3'
 2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
     link/ether 08:00:27:ea:a1:08 brd ff:ff:ff:ff:ff:ff
-    inet 192.168.0.50/24 brd 192.168.0.255 scope global enp0s3
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic enp0s3
+       valid_lft 86222sec preferred_lft 86222sec
+    inet 10.0.2.3/24 scope global secondary enp0s3
        valid_lft forever preferred_lft forever
     inet6 fd00::a00:27ff:feea:a108/64 scope global dynamic mngtmpaddr 
-       valid_lft 85956sec preferred_lft 13956sec
-    inet6 fe80::a00:27ff:feea:a108/64 scope link 
-       valid_lft forever preferred_lft forever
+       valid_lft 86222sec preferred_lft 14222sec
 
 # Saída do comando 'ip route'
-default via 192.168.0.1 dev enp0s3 
-192.168.0.0/24 dev enp0s3 proto kernel scope link src 192.168.0.50 
+default via 10.0.2.2 dev enp0s3 
+10.0.2.0/24 dev enp0s3 proto kernel scope link src 10.0.2.15 
+
 
 # Saída do comando 'cat /etc/network/interfaces'
 # This file describes the network interfaces available on your system
@@ -167,16 +170,12 @@ auto lo
 iface lo inet loopback
 
 allow-hotplug enp0s3
-iface enp0s3 inet static
-address 192.168.0.50
-netmask 255.255.255.0
-gateway 192.168.0.1
-dns-nameservers 8.8.8.8 1.1.1.1
+iface enp0s3 inet dhcp
 
+```
 ### Prática checkpoint05 – Teste com wget (p. 288)
 #### Resumo da Prática
-Não consegui realizar o download, pois dava esse erro : Resolving www.aied.com.br (www.aied.com.br)... failed: Temporary failure in name resolution.
-Então eu acessei o site e criei um install.py e coloquei o que estava no site dentro.
+A tentativa de download via `wget` retornou erro de resolução DNS. Como alternativa, acessei o site manualmente e recriei o arquivo `install.py` copiando o conteúdo disponibilizado, garantindo a conclusão da prática mesmo sem conectividade.
 
 * **Evidência de Validação:**
 ```bash
@@ -205,7 +204,7 @@ os.system("ln -s /etc/aied/aied_"+ str(os_version) +" /usr/bin/aied");
 os.system("chmod +x /etc/aied/aied_"+ str ( os_version ) + "   " );
 
 #OK, serÃ¡ usado para isntalacao do aied.com.br
-
+```
 ---
 ## ATIVIDADE 2: Mapa Mental (Conceitos Chave)
 * **Instrução:** Esta atividade é **física** e **manual**.
