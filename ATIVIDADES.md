@@ -604,3 +604,192 @@ O programa cria um processo filho que executa uma tarefa simulada (por meio do s
 O processo pai utiliza a chamada waitpid(pid, &status, 0) para esperar especificamente pelo término do processo filho de PID 24217.
 Após a conclusão, o pai imprime o código de saída obtido por WEXITSTATUS(status).
 A saída mostra que o filho terminou corretamente com código 15, demonstrando o funcionamento preciso do waitpid() para sincronizar processos individualmente.
+
+#### `system.cpp` (Livro-Texto p. 196)
+* **Objetivo do Código:** Demonstrar a função `system()`, que é um atalho (e geralmente
+inseguro) para `fork + exec + wait`. O programa C++ pausa, executa um comando de shell (`ls
+-l`) e depois continua.
+* **Código-Fonte:**
+```cpp
+//(p.196)
+#include <iostream>
+#include <stdlib.h>
+
+int main() {
+    std::cout << "Executando comando: ls -l\n";
+    system("ls -l");
+    return 0;
+}
+````
+* **Análise da Saída:**
+* *Comando de Compilação:* `g++ -o system system.cpp`
+* *Saída da Execução:*
+```bash
+Executando comando: ls -l
+total 364
+-rw------- 1 userlinux userlinux   911 Nov 28 00:40 ATIVIDADES.md.save
+-rwxr-xr-x 1 userlinux userlinux 16000 Nov 28 23:29 calcfb
+-rw-r--r-- 1 userlinux userlinux   137 Nov 28 23:29 calcfb.cpp
+drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 20:19 cdrom
+drwxr-xr-x 2 userlinux userlinux  4096 Nov 26 21:36 codigos
+drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Desktop
+-rwxr-xr-x 1 userlinux userlinux 30840 Nov 28 23:15 devices
+-rw-r--r-- 1 userlinux userlinux   541 Nov 28 03:18 devices.cpp
+drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Documents
+drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Downloads
+-rw-r--r-- 1 userlinux userlinux    99 Nov 28 23:28 fibonacci.h
+-rwxr-xr-x 1 userlinux userlinux 16528 Nov 28 23:19 getuuid
+-rw-r--r-- 1 userlinux userlinux  1464 Nov 28 03:18 getuuid.c
+-rw-r--r-- 1 userlinux userlinux  1063 Nov 28 17:38 install.py
+drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Music
+-rwxr-xr-x 1 userlinux userlinux 24168 Nov 28 23:25 myblkid
+-rw-r--r-- 1 userlinux userlinux   510 Nov 28 23:24 myblkid.cpp
+drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Pictures
+drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Public
+-rwxr-xr-x 1 userlinux userlinux 16448 Nov 28 23:47 system
+-rw-r--r-- 1 userlinux userlinux   139 Nov 28 23:47 system.cpp
+drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Templates
+-rwxr-xr-x 1 userlinux userlinux 15960 Nov 28 23:22 teste
+-rw-r--r-- 1 userlinux userlinux   106 Nov 28 23:21 teste.c
+-rwxr-xr-x 1 userlinux userlinux 23152 Nov 28 23:31 thread
+-rw-r--r-- 1 userlinux userlinux   167 Nov 28 23:31 thread.cpp
+drwxr-xr-x 3 userlinux userlinux  4096 Nov 28 18:05 trabalhoSO
+-rw-r--r-- 1 userlinux userlinux 26882 Nov 28 18:06 trabalho.zip
+-rw-r--r-- 1 userlinux userlinux   572 Nov 26 22:03 typescript
+-rwxr-xr-x 1 userlinux userlinux 16648 Nov 28 23:34 usefork
+-rw-r--r-- 1 userlinux userlinux   456 Nov 28 23:34 usefork.cpp
+-rwxr-xr-x 1 userlinux userlinux 16696 Nov 28 23:37 usewait
+-rw-r--r-- 1 userlinux userlinux   537 Nov 28 23:37 usewait.cpp
+-rwxr-xr-x 1 userlinux userlinux 16600 Nov 28 23:39 usewait_exit
+-rw-r--r-- 1 userlinux userlinux   605 Nov 28 23:39 usewait_exit.cpp
+drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Videos
+-rwxr-xr-x 1 userlinux userlinux 16696 Nov 28 23:43 waitpid
+-rw-r--r-- 1 userlinux userlinux   706 Nov 28 23:43 waitpid.cpp
+```
+O programa utiliza a função system() para executar o comando externo ls -l, que lista os arquivos do diretório atual com informações detalhadas. A primeira linha exibida pelo programa é a mensagem “Executando comando: ls -l”, seguida da saída real do comando ls, mostrando todos os arquivos e permissões presentes no diretório de trabalho.
+Isso confirma que a função system() está funcionando corretamente, permitindo que o programa interaja com o shell e execute comandos externos.
+
+#### `pop.cpp` (Livro-Texto p. 197)
+* **Objetivo do Código:** Demonstrar a função `popen()` (pipe open). Similar ao `system()`, ele
+executa um comando, mas permite ao programa C++ *capturar* a saída do comando (`ls -l`) e
+processá-la linha por linha.
+* **Código-Fonte:**
+```cpp
+// (p. 197)
+#include <iostream>
+#include <stdio.h>   // popen, pclose
+#include <stdlib.h>  // exit
+
+int main() {
+    FILE *fpipe;
+    char *command = (char *)"ls -l";
+    char line[256];
+
+    if (!(fpipe = (FILE*)popen(command, "r"))) {
+        perror("Falha ao abrir pipe");
+        exit(1);
+    }
+
+    while (fgets(line, sizeof(line), fpipe)) {
+        std::cout << "Linha: " << line;
+    }
+
+    pclose(fpipe);
+    return 0;
+}
+```
+* **Análise da Saída:**
+* *Comando de Compilação:* `g++ -o pop pop.cpp`
+* *Saída da Execução:*
+```bash
+Linha: total 388
+Linha: -rw------- 1 userlinux userlinux   911 Nov 28 00:40 ATIVIDADES.md.save
+Linha: -rwxr-xr-x 1 userlinux userlinux 16000 Nov 28 23:29 calcfb
+Linha: -rw-r--r-- 1 userlinux userlinux   137 Nov 28 23:29 calcfb.cpp
+Linha: drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 20:19 cdrom
+Linha: drwxr-xr-x 2 userlinux userlinux  4096 Nov 26 21:36 codigos
+Linha: drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Desktop
+Linha: -rwxr-xr-x 1 userlinux userlinux 30840 Nov 28 23:15 devices
+Linha: -rw-r--r-- 1 userlinux userlinux   541 Nov 28 03:18 devices.cpp
+Linha: drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Documents
+Linha: drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Downloads
+Linha: -rw-r--r-- 1 userlinux userlinux    99 Nov 28 23:28 fibonacci.h
+Linha: -rwxr-xr-x 1 userlinux userlinux 16528 Nov 28 23:19 getuuid
+Linha: -rw-r--r-- 1 userlinux userlinux  1464 Nov 28 03:18 getuuid.c
+Linha: -rw-r--r-- 1 userlinux userlinux  1063 Nov 28 17:38 install.py
+Linha: drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Music
+Linha: -rwxr-xr-x 1 userlinux userlinux 24168 Nov 28 23:25 myblkid
+Linha: -rw-r--r-- 1 userlinux userlinux   510 Nov 28 23:24 myblkid.cpp
+Linha: drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Pictures
+Linha: -rwxr-xr-x 1 userlinux userlinux 16624 Nov 28 23:50 pop
+Linha: -rw-r--r-- 1 userlinux userlinux   418 Nov 28 23:50 pop.cpp
+Linha: drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Public
+Linha: -rwxr-xr-x 1 userlinux userlinux 16448 Nov 28 23:47 system
+Linha: -rw-r--r-- 1 userlinux userlinux   139 Nov 28 23:47 system.cpp
+Linha: drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Templates
+Linha: -rwxr-xr-x 1 userlinux userlinux 15960 Nov 28 23:22 teste
+Linha: -rw-r--r-- 1 userlinux userlinux   106 Nov 28 23:21 teste.c
+Linha: -rwxr-xr-x 1 userlinux userlinux 23152 Nov 28 23:31 thread
+Linha: -rw-r--r-- 1 userlinux userlinux   167 Nov 28 23:31 thread.cpp
+Linha: drwxr-xr-x 3 userlinux userlinux  4096 Nov 28 18:05 trabalhoSO
+Linha: -rw-r--r-- 1 userlinux userlinux 26882 Nov 28 18:06 trabalho.zip
+Linha: -rw-r--r-- 1 userlinux userlinux   572 Nov 26 22:03 typescript
+Linha: -rwxr-xr-x 1 userlinux userlinux 16648 Nov 28 23:34 usefork
+Linha: -rw-r--r-- 1 userlinux userlinux   456 Nov 28 23:34 usefork.cpp
+Linha: -rwxr-xr-x 1 userlinux userlinux 16696 Nov 28 23:37 usewait
+Linha: -rw-r--r-- 1 userlinux userlinux   537 Nov 28 23:37 usewait.cpp
+Linha: -rwxr-xr-x 1 userlinux userlinux 16600 Nov 28 23:39 usewait_exit
+Linha: -rw-r--r-- 1 userlinux userlinux   605 Nov 28 23:39 usewait_exit.cpp
+Linha: drwxr-xr-x 2 userlinux userlinux  4096 Nov 24 19:34 Videos
+Linha: -rwxr-xr-x 1 userlinux userlinux 16696 Nov 28 23:43 waitpid
+Linha: -rw-r--r-- 1 userlinux userlinux   706 Nov 28 23:43 waitpid.cpp
+```
+O programa executa o comando ls -l por meio de popen(), que cria um pipe entre o processo e o comando.
+Enquanto system() apenas imprime a saída diretamente, popen() permite que o programa leia a saída linha por linha, como mostrado no prefixo “Linha: ...”.
+Isso demonstra como capturar e processar a saída de comandos externos dentro do próprio programa C++.
+
+#### `receivesignal.cpp` (Livro-Texto p. 203)
+* **Objetivo do Código:** Demonstrar como um processo pode "capturar" (handle) um sinal.
+Este programa entra em loop infinito, mas se o usuário pressionar `Ctrl+C` (que envia o sinal
+`SIGINT`), o programa executa a função `signal_handler` em vez de fechar imediatamente.
+* **Código-Fonte:**
+```cpp
+// (p. 203)
+#include <iostream>
+#include <csignal>
+#include <unistd.h>
+
+void handleSignal(int signum) {
+    std::cout << "Sinal recebido: " << signum << std::endl;
+}
+
+int main() {
+    signal(SIGINT, handleSignal);   // Ctrl + C
+    signal(SIGTERM, handleSignal);  // kill PID
+    signal(SIGUSR1, handleSignal);  // kill -USR1 PID
+
+    std::cout << "PID do processo: " << getpid() << std::endl;
+    std::cout << "Aguardando sinais..." << std::endl;
+
+    while (true) {
+        pause(); // espera por um sinal
+    }
+
+    return 0;
+}
+```
+* **Análise da Saída:**
+* *Comando de Compilação:* `g++ -o receivesignal receivesignal.cpp`
+* *Saída da Execução:* (Deixe o programa rodar por 3 segundos e então pressione `Ctrl+C`)
+```bash
+PID do processo: 27507
+Aguardando sinais...
+^CSinal recebido: 2
+^CSinal recebido: 2
+^CSinal recebido: 2
+^CSinal recebido: 2
+```
+O programa imprime o PID e fica aguardando sinais através da função pause().
+Quando o usuário pressiona CTRL+C, o sistema envia o sinal SIGINT (nº 2) para o processo, que executa a função handleSignal().
+
+
